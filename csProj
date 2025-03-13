@@ -1,0 +1,135 @@
+from abc import ABC, abstractmethod
+
+# 1. Product Class (Base class)
+class Product:
+    def __init__(self, product_id, name, price, quantity):
+        self.product_id = product_id
+        self.name = name
+        self.price = price
+        self.quantity = quantity
+    
+    def update_quantity(self, new_quantity):
+        self.quantity = new_quantity
+    
+    def get_product_info(self):
+        return f"Product ID: {self.product_id}, Name: {self.name}, Price: ${self.price}, Quantity: {self.quantity}"
+
+# 2. DigitalProduct Class (Derived from Product)
+class DigitalProduct(Product):
+    def __init__(self, product_id, name, price, quantity, file_size, download_link):
+        super().__init__(product_id, name, price, quantity)
+        self.file_size = file_size
+        self.download_link = download_link
+    
+    def get_product_info(self):
+        return f"{super().get_product_info()}, File Size: {self.file_size}MB, Download Link: {self.download_link}"
+
+# 3. PhysicalProduct Class (Derived from Product)
+class PhysicalProduct(Product):
+    def __init__(self, product_id, name, price, quantity, weight, dimensions, shipping_cost):
+        super().__init__(product_id, name, price, quantity)
+        self.weight = weight
+        self.dimensions = dimensions
+        self.shipping_cost = shipping_cost
+    
+    def get_product_info(self):
+        return f"{super().get_product_info()}, Weight: {self.weight}kg, Dimensions: {self.dimensions}, Shipping Cost: ${self.shipping_cost}"
+
+# 4. Cart Class
+class Cart:
+    def __init__(self):
+        self.__cart_items = []
+    
+    def add_product(self, product):
+        self.__cart_items.append(product)
+    
+    def remove_product(self, product_id):
+        self.__cart_items = [item for item in self.__cart_items if item.product_id != product_id]
+    
+    def view_cart(self):
+        if not self.__cart_items:
+            return "Cart is empty."
+        return "\n".join([item.get_product_info() for item in self.__cart_items])
+    
+    def calculate_total(self):
+        return sum([item.price * item.quantity for item in self.__cart_items])
+    
+    def apply_discount(self, discount):
+        total = self.calculate_total()
+        return discount.apply_discount(total)
+
+# 5. User Class
+class User:
+    def __init__(self, user_id, name):
+        self.user_id = user_id
+        self.name = name
+        self.cart = Cart()
+    
+    def add_to_cart(self, product):
+        self.cart.add_product(product)
+    
+    def remove_from_cart(self, product_id):
+        self.cart.remove_product(product_id)
+    
+    def checkout(self, discount=None):
+        total = self.cart.calculate_total()
+        if discount:
+            total = self.cart.apply_discount(discount)
+        self.cart = Cart()  # Empty the cart after checkout
+        return f"Checkout successful! Total amount: ${total:.2f}"
+
+# 6. Discount Class (Abstract Base Class)
+class Discount(ABC):
+    @abstractmethod
+    def apply_discount(self, total_amount):
+        pass
+
+# 7. PercentageDiscount Class (Derived from Discount)
+class PercentageDiscount(Discount):
+    def __init__(self, percentage):
+        self.percentage = percentage
+    
+    def apply_discount(self, total_amount):
+        return total_amount * (1 - self.percentage / 100)
+
+# 8. FixedAmountDiscount Class (Derived from Discount)
+class FixedAmountDiscount(Discount):
+    def __init__(self, amount):
+        self.amount = amount
+    
+    def apply_discount(self, total_amount):
+        return total_amount - self.amount
+
+# Testing the Code
+
+# Creating Products
+digital_product = DigitalProduct(1, "E-Book", 10.99, 2, 1.5, "www.downloadlink.com")
+physical_product = PhysicalProduct(2, "Laptop", 999.99, 1, 2.5, "30x20x5 cm", 15)
+
+# Creating a User
+user = User(1, "John Doe")
+
+# Adding Products to Cart
+user.add_to_cart(digital_product)
+user.add_to_cart(physical_product)
+
+# Viewing Cart
+print("Cart Items:")
+print(user.cart.view_cart())
+
+# Calculating Total
+print("\nTotal Price:")
+print(f"${user.cart.calculate_total()}")
+
+# Applying Discount (Percentage)
+percentage_discount = PercentageDiscount(10)  # 10% discount
+print("\nAfter Applying Percentage Discount:")
+print(f"${user.cart.apply_discount(percentage_discount):.2f}")
+
+# Checkout
+print("\nCheckout:")
+print(user.checkout(discount=percentage_discount))
+
+# Verify Cart is Empty after Checkout
+print("\nCart after Checkout:")
+print(user.cart.view_cart())
