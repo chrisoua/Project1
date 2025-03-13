@@ -133,3 +133,6 @@ print(user.checkout(discount=percentage_discount))
 # Verify Cart is Empty after Checkout
 print("\nCart after Checkout:")
 print(user.cart.view_cart())
+
+# Report Link
+# https://pennstateoffice365-my.sharepoint.com/:b:/g/personal/cjo5505_psu_edu/EbaqdMiuhp9FgKV3gMSIwzMBUxK8vDLzH4GrcAcbrE1RNA?e=3eMc4h
